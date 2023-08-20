@@ -27,7 +27,7 @@
   "scripts": {
     "test": "npx hardhat test",
     "node": "npx hardhat node --watch",
-    "frontend": "cd frontend && npm run start"
+    "frontend": "cd frontend-next && npm run start"
   },
   "author": "Jeremy Tong",
   "license": "MIT",
