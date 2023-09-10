@@ -11,5 +11,12 @@
       }
     ]
   ],
-  "plugins": []
+  "plugins": [
+    [
+      "styled-components",
+      {
+        "ssr": true
+      }
+    ]
+  ]
 }

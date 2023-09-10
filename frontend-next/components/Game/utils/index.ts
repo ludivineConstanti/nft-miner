@@ -1,3 +1,8 @@
+export { default as revealNeighbouringSquares } from "./revealNeighbouringSquares";
+export { default as executeOnNeighbouringSquares } from "./executeOnNeighbouringSquares";
+export { default as placeBombs } from "./placeBombs";
+export { default as findBombs } from "./findBombs";
+
 export const check = {
   isValid: (index: number, length: number) => {
     return index >= 0 && index < length;
