@@ -3,11 +3,14 @@ import styled from "styled-components";
 
 import { squareState } from "../../constants";
 import { numberOfBombs } from "./constants";
-import { placeBombs, revealNeighbouringSquares, findBombs } from "./utils";
+import { placeBombs, revealNeighbouringSquares } from "./utils";
 
 const Square = styled.button`
   aspect-ratio: 1/1;
   box-shadow: 0 4px 5px rgba(10, 0, 25, 1);
+  color: white;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 `;
 
 enum squareClassNames {
@@ -35,8 +38,7 @@ const returnClassName = ({
 }: ReturnClassNameProps) => {
   if (gameIsLost && hasABomb) {
     return `${squareClassNames.bomb}`;
-  }
-  if (isVisible && value === 0) {
+  } else if (isVisible && value === 0) {
     return `${squareClassNames.visible} ${squareClassNames.empty}`;
   } else if (isVisible) {
     return `${squareClassNames.visible}`;
@@ -45,8 +47,6 @@ const returnClassName = ({
   }
   return `${squareClassNames.hidden}`;
 };
-
-const normalSize = "2rem";
 
 interface GameSquareProps {
   index: number;
@@ -96,20 +96,24 @@ const GameSquare = ({
   return (
     <Square
       style={{
-        gridColumn: `${(index % gameSize.width) + 1}/ span 1`,
+        gridColumn: `${(index % gameSize.width) + 1} / span 1`,
       }}
       onContextMenu={(e) => {
+        // avoids showing the context menu on right click
         e.preventDefault();
+        // if the game is lost, the user can not interact with the game
         if (gameIsLost === false) {
           const newFlags = [...flagsLayout];
+          // if there is no flag, place one, otherwise remove it
           newFlags[index] = flagsLayout[index] ? false : true;
           setFlagsLayout(newFlags);
         }
       }}
       onClick={() => {
+        // 1. if the game is lost, the user should not be able to interact with the game
+        // 2. the visibility of the square can not change if there is a flag on it
         if (gameIsLost === false && flagsLayout[index] !== true) {
           if (isFirstTurn) {
-            console.log("place bombs");
             placeBombs({
               indexClickedSquare: index,
               visibilityLayout,
@@ -121,7 +125,6 @@ const GameSquare = ({
               setVisibilityLayout,
               setBombsLayout,
             });
-
             setIsFirstTurn(false);
           } else {
             if (bombsLayout[index] === true) {
@@ -160,9 +163,6 @@ const Wrapper = styled.div`
     align-items: center;
     background-color: rgba(255, 255, 255, 0.15);
     border: 0.5px solid rgba(255, 255, 255, 0.25);
-    color: white;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
     width: 2rem;
   }
   .${squareClassNames.bomb} {
@@ -178,16 +178,19 @@ const Wrapper = styled.div`
     border-radius: 1rem;
     width: 1rem;
     background-color: rgba(255, 255, 255, 0.1);
-    cursor: pointer;
     margin: 0.5rem;
+    cursor: pointer;
   }
   .${squareClassNames.flag} {
     transform: rotate(45deg) scale(0.85);
     background-color: rgba(200, 250, 250, 0.75);
     border: 1px solid white;
     border-radius: 0.2rem;
+    cursor: pointer;
   }
 `;
+
+const defaultStatus = "Not started";
 
 interface GameProps {
   gameSize: { width: number; height: number };
@@ -195,22 +198,16 @@ interface GameProps {
 }
 
 const Game = ({ gameSize, gameLayout }: GameProps) => {
-  const [status, setStatus] = useState("Not started");
+  const [status, setStatus] = useState(defaultStatus);
   const [isFirstTurn, setIsFirstTurn] = useState(true);
   const [gameIsLost, setGameIsLost] = useState(false);
 
+  // it's useless to fill the array on initialization
+  // since we don't know the layout length at this point
   const [visibilityLayout, setVisibilityLayout] = useState<boolean[]>([]);
   const [flagsLayout, setFlagsLayout] = useState<boolean[]>([]);
   const [bombsLayout, setBombsLayout] = useState<boolean[]>([]);
   const [valuesLayout, setValuesLayout] = useState<number[]>([]);
-
-  useEffect(() => {
-    const remainingHiddenSquares = visibilityLayout.filter(
-      (visibility, index) =>
-        visibility !== true && gameLayout[index] === squareState.thereIsASquare
-    ).length;
-    console.log(remainingHiddenSquares, numberOfBombs - remainingHiddenSquares);
-  }, [visibilityLayout]);
 
   useEffect(() => {
     const remainingHiddenSquares = visibilityLayout.filter(
@@ -234,7 +231,7 @@ const Game = ({ gameSize, gameLayout }: GameProps) => {
       }`}</p>
       <button
         onClick={() => {
-          setStatus("Not started");
+          setStatus(defaultStatus);
           setIsFirstTurn(true);
           setGameIsLost(false);
 

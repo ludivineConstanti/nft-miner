@@ -18,29 +18,28 @@ const revealSquares = ({
   layoutLength,
   valuesLayout,
 }: RevealSquaresProps) => {
-  // is necessary to check if the square exist
-  // since this function will be called for the squares next to the clicked square
-  // (and they might not exist)
-  if (gameLayout[index] !== squareState.noSquare) {
+  // it's necessary to check if the square is part of the artwork
+  // since this function will not only be called for the square which was clicked
+  // but also for its neighbouring squares
+  if (
+    gameLayout[index] !== squareState.noSquare &&
+    visibilityLayout[index] !== true
+  ) {
     visibilityLayout[index] = true;
+    // if the square is empty, its neighbouring squares should become visible too
     if (valuesLayout[index] === 0) {
       executeOnNeighbouringSquares({
         index,
         width,
         callback: (currentIndex) => {
-          if (visibilityLayout[currentIndex] !== true) {
-            visibilityLayout[currentIndex] = true;
-            if (valuesLayout[currentIndex] === 0) {
-              revealSquares({
-                gameLayout,
-                visibilityLayout,
-                index: currentIndex,
-                width,
-                layoutLength,
-                valuesLayout,
-              });
-            }
-          }
+          revealSquares({
+            gameLayout,
+            visibilityLayout,
+            index: currentIndex,
+            width,
+            layoutLength,
+            valuesLayout,
+          });
         },
         layoutLength,
       });
@@ -73,6 +72,7 @@ const revealNeighbouringSquares = ({
     valuesLayout,
   });
 
+  // updates the visibility loayout with the one updated by the reveal squares function
   setVisibilityLayout(newVisibilityLayout);
 };
 

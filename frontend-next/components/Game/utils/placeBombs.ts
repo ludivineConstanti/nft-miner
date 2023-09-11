@@ -36,6 +36,11 @@ const placeBombs = ({
     layoutLength
   );
 
+  // The first square clicked should not be a bomb
+  // (otherwise ou could lose the game on the first round)
+  // and the ones around it should not be bombs either
+  // (otherwise it's pretty hard to play
+  // if you just get 1 number as the first hint to start the game)
   const indexesWhichShouldNotBeBombs: number[] = [indexClickedSquare];
 
   executeOnNeighbouringSquares({
@@ -50,12 +55,15 @@ const placeBombs = ({
   let bombCount = numberOfBombs;
 
   while (bombCount > 0) {
-    console.log("bombCount", bombCount);
+    // choose a random number in the layout
     const potentialBombIndex = Math.floor(Math.random() * layoutLength);
+    // 1. check if the square actually exist (if it's part of the artwork or empty)
+    // 2. check if there's not already a bomb (otherwise we would have less bombs than expected)
+    // 3. check if the square is not around the first square clicked or the first square itself
     if (
+      gameLayout[potentialBombIndex] === squareState.thereIsASquare &&
       newBombsLayout[potentialBombIndex] !== true &&
-      indexesWhichShouldNotBeBombs.includes(potentialBombIndex) === false &&
-      gameLayout[potentialBombIndex] === squareState.thereIsASquare
+      indexesWhichShouldNotBeBombs.includes(potentialBombIndex) === false
     ) {
       newBombsLayout[potentialBombIndex] = true;
       bombCount--;
@@ -82,7 +90,9 @@ const placeBombs = ({
     setVisibilityLayout,
   });
 
+  // updates the values layout
   setValuesLayout(newValuesLayout);
+  // updates the bombs layout
   setBombsLayout(newBombsLayout);
 };
 
