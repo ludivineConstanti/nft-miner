@@ -1,7 +1,11 @@
 node_modules
+.env
+coverage
+coverage.json
+typechain
+typechain-types
 
-#hardhat files
+# Hardhat files
 cache
 artifacts
-frontend/src/hardhat
-frontend-next/src/hardhat
+

@@ -1,6 +1,24 @@
-import * as React from "react";
+import React, { useEffect } from "react";
+import { ethers } from "ethers";
+import Game from "../../../artifacts/contracts/Game.sol/Game";
 
-import { squareState } from "../constants";
+import { squareState } from "../../constants";
+
+const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const contractABI = Game.abi;
+
+const init = async () => {
+  const provider = ethers.getDefaultProvider("http://127.0.0.1:8545/");
+  const contract = new ethers.Contract(contractAddress, contractABI, provider);
+
+  try {
+    const helloWorld = await contract.helloWorld();
+
+    console.log(helloWorld);
+  } catch (error) {
+    console.log("ERROR:", error);
+  }
+};
 
 interface PlaygroundCreatorProps {
   setGameLayout: React.Dispatch<React.SetStateAction<squareState[]>>;
@@ -11,6 +29,9 @@ const PlaygroundCreator = ({
   setGameLayout,
   setGameSize,
 }: PlaygroundCreatorProps) => {
+  useEffect(() => {
+    init();
+  }, []);
   return (
     <input
       type="file"
