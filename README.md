@@ -13,6 +13,7 @@ npx hardhat run scripts/deploy.ts
 ```
 
 `npx hardhat node` => runs the local blockchain at http://127.0.0.1:8545/ (should use `npx hardhat compile` before using it)
+deploy should be done after running the blockchain, to deploy the contracts
 `npx hardhat compile` => compile contracts in the artifacts folder
 
 first run `npx hardhat node` and then the deploy script

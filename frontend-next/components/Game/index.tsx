@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
+import { ethers } from "ethers";
 
+import Game from "../../../artifacts/contracts/Game.sol/Game";
 import { squareState } from "../../constants";
 import { numberOfBombs } from "./constants";
 import { placeBombs, revealNeighbouringSquares } from "./utils";
@@ -150,6 +152,22 @@ const GameSquare = ({
   );
 };
 
+const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const contractABI = Game.abi;
+
+const init = async () => {
+  const provider = ethers.getDefaultProvider("http://127.0.0.1:8545/");
+  const contract = new ethers.Contract(contractAddress, contractABI, provider);
+
+  try {
+    const gameLayouts = await contract.getGameLayouts();
+
+    console.log("gameLayouts", gameLayouts[0]);
+  } catch (error) {
+    console.log("ERROR:", error);
+  }
+};
+
 const Wrapper = styled.div`
   grid-gap: 0.5rem;
   justify-items: center;
@@ -197,7 +215,7 @@ interface GameProps {
   gameLayout: squareState[];
 }
 
-const Game = ({ gameSize, gameLayout }: GameProps) => {
+const GameComponent = ({ gameSize, gameLayout }: GameProps) => {
   const [status, setStatus] = useState(defaultStatus);
   const [isFirstTurn, setIsFirstTurn] = useState(true);
   const [gameIsLost, setGameIsLost] = useState(false);
@@ -208,6 +226,10 @@ const Game = ({ gameSize, gameLayout }: GameProps) => {
   const [flagsLayout, setFlagsLayout] = useState<boolean[]>([]);
   const [bombsLayout, setBombsLayout] = useState<boolean[]>([]);
   const [valuesLayout, setValuesLayout] = useState<number[]>([]);
+
+  useEffect(() => {
+    init();
+  }, []);
 
   useEffect(() => {
     const remainingHiddenSquares = visibilityLayout.filter(
@@ -276,4 +298,4 @@ const Game = ({ gameSize, gameLayout }: GameProps) => {
   );
 };
 
-export default Game;
+export default GameComponent;
