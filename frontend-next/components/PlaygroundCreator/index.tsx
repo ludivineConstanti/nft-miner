@@ -1,6 +1,6 @@
-import * as React from "react";
+import React from "react";
 
-import { squareState } from "../constants";
+import { squareState } from "../../constants";
 
 interface PlaygroundCreatorProps {
   setGameLayout: React.Dispatch<React.SetStateAction<squareState[]>>;

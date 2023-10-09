@@ -1,153 +1,26 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
+import { ethers } from "ethers";
 
+import Game from "../../../artifacts/contracts/Game.sol/Game";
 import { squareState } from "../../constants";
-import { numberOfBombs } from "./constants";
-import { placeBombs, revealNeighbouringSquares } from "./utils";
+import { numberOfBombs, squareClassNames } from "./constants";
+import Square from "./Square";
 
-const Square = styled.button`
-  aspect-ratio: 1/1;
-  box-shadow: 0 4px 5px rgba(10, 0, 25, 1);
-  color: white;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-`;
+const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const contractABI = Game.abi;
 
-enum squareClassNames {
-  visible = "visible",
-  empty = "empty",
-  hidden = "hidden",
-  flag = "flag",
-  bomb = "bomb",
-}
+const init = async () => {
+  const provider = ethers.getDefaultProvider("http://127.0.0.1:8545/");
+  const contract = new ethers.Contract(contractAddress, contractABI, provider);
 
-interface ReturnClassNameProps {
-  isVisible: boolean;
-  hasAFlag: boolean;
-  hasABomb?: boolean;
-  value: number;
-  gameIsLost?: boolean;
-}
+  try {
+    const gameLayouts = await contract.getGameLayouts();
 
-const returnClassName = ({
-  isVisible,
-  hasAFlag,
-  value,
-  hasABomb,
-  gameIsLost,
-}: ReturnClassNameProps) => {
-  if (gameIsLost && hasABomb) {
-    return `${squareClassNames.bomb}`;
-  } else if (isVisible && value === 0) {
-    return `${squareClassNames.visible} ${squareClassNames.empty}`;
-  } else if (isVisible) {
-    return `${squareClassNames.visible}`;
-  } else if (hasAFlag) {
-    return `${squareClassNames.flag}`;
+    console.log("gameLayouts", gameLayouts[0]);
+  } catch (error) {
+    console.log("ERROR:", error);
   }
-  return `${squareClassNames.hidden}`;
-};
-
-interface GameSquareProps {
-  index: number;
-  gameSize: { width: number; height: number };
-  gameLayout: squareState[];
-  bombsLayout: boolean[];
-  setBombsLayout: React.Dispatch<React.SetStateAction<boolean[]>>;
-  visibilityLayout: boolean[];
-  setVisibilityLayout: React.Dispatch<React.SetStateAction<boolean[]>>;
-  flagsLayout: boolean[];
-  setFlagsLayout: React.Dispatch<React.SetStateAction<boolean[]>>;
-  valuesLayout: number[];
-  setValuesLayout: React.Dispatch<React.SetStateAction<number[]>>;
-  setIsFirstTurn: React.Dispatch<React.SetStateAction<boolean>>;
-  isFirstTurn: boolean;
-  gameIsLost: boolean;
-  setGameIsLost: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const GameSquare = ({
-  index,
-  gameSize,
-  visibilityLayout,
-  setVisibilityLayout,
-  gameLayout,
-  valuesLayout,
-  setValuesLayout,
-  setIsFirstTurn,
-  isFirstTurn,
-  flagsLayout,
-  setFlagsLayout,
-  gameIsLost,
-  setGameIsLost,
-  bombsLayout,
-  setBombsLayout,
-}: GameSquareProps) => {
-  const isVisible = visibilityLayout[index];
-  const className = returnClassName({
-    isVisible,
-    hasAFlag: flagsLayout[index],
-    value: valuesLayout[index],
-    gameIsLost,
-    hasABomb: bombsLayout[index],
-  });
-  const layoutLength = gameLayout.length;
-
-  return (
-    <Square
-      style={{
-        gridColumn: `${(index % gameSize.width) + 1} / span 1`,
-      }}
-      onContextMenu={(e) => {
-        // avoids showing the context menu on right click
-        e.preventDefault();
-        // if the game is lost, the user can not interact with the game
-        if (gameIsLost === false) {
-          const newFlags = [...flagsLayout];
-          // if there is no flag, place one, otherwise remove it
-          newFlags[index] = flagsLayout[index] ? false : true;
-          setFlagsLayout(newFlags);
-        }
-      }}
-      onClick={() => {
-        // 1. if the game is lost, the user should not be able to interact with the game
-        // 2. the visibility of the square can not change if there is a flag on it
-        if (gameIsLost === false && flagsLayout[index] !== true) {
-          if (isFirstTurn) {
-            placeBombs({
-              indexClickedSquare: index,
-              visibilityLayout,
-              gameLayout,
-              width: gameSize.width,
-              layoutLength,
-              valuesLayout,
-              setValuesLayout,
-              setVisibilityLayout,
-              setBombsLayout,
-            });
-            setIsFirstTurn(false);
-          } else {
-            if (bombsLayout[index] === true) {
-              setGameIsLost(true);
-            } else {
-              revealNeighbouringSquares({
-                gameLayout,
-                visibilityLayout,
-                index: index,
-                width: gameSize.width,
-                layoutLength,
-                valuesLayout,
-                setVisibilityLayout,
-              });
-            }
-          }
-        }
-      }}
-      className={className}
-    >
-      {isVisible && valuesLayout[index] !== 0 ? valuesLayout[index] : ""}
-    </Square>
-  );
 };
 
 const Wrapper = styled.div`
@@ -197,7 +70,7 @@ interface GameProps {
   gameLayout: squareState[];
 }
 
-const Game = ({ gameSize, gameLayout }: GameProps) => {
+const GameComponent = ({ gameSize, gameLayout }: GameProps) => {
   const [status, setStatus] = useState(defaultStatus);
   const [isFirstTurn, setIsFirstTurn] = useState(true);
   const [gameIsLost, setGameIsLost] = useState(false);
@@ -208,6 +81,10 @@ const Game = ({ gameSize, gameLayout }: GameProps) => {
   const [flagsLayout, setFlagsLayout] = useState<boolean[]>([]);
   const [bombsLayout, setBombsLayout] = useState<boolean[]>([]);
   const [valuesLayout, setValuesLayout] = useState<number[]>([]);
+
+  useEffect(() => {
+    init();
+  }, []);
 
   useEffect(() => {
     const remainingHiddenSquares = visibilityLayout.filter(
@@ -251,7 +128,7 @@ const Game = ({ gameSize, gameLayout }: GameProps) => {
       >
         {gameLayout.map((squareContent, i) => {
           return squareContent !== squareState.noSquare ? (
-            <GameSquare
+            <Square
               key={`grid-square-${i}`}
               index={i}
               gameLayout={gameLayout}
@@ -276,4 +153,4 @@ const Game = ({ gameSize, gameLayout }: GameProps) => {
   );
 };
 
-export default Game;
+export default GameComponent;
