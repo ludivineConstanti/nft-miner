@@ -1,21 +1,13 @@
-# Sample Hardhat Project
+# NFT Miner
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This project is an NFT gaming experience, based on the Minesweeper game. The player can decide the shape the game will have by choosing one of the available options, or create its own. If he wins the game, an NFT (resembling the game he just played) will be added to his wallet. Players need to pay to play the game, and to upload their artworks, but they can try to earn money when other people play the artwork they created or by selling the NFTs they won.
 
-Try running some of the following tasks:
+Since this project is still in its early stages, most of those features are not yet implemented.
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+## Use
 
 `npx hardhat node` => runs the local blockchain at http://127.0.0.1:8545/ (should use `npx hardhat compile` before using it)
 deploy should be done after running the blockchain, to deploy the contracts
 `npx hardhat compile` => compile contracts in the artifacts folder
-
-first run `npx hardhat node` and then the deploy script
 
 Whenever something happens in the local blockchain, it will be shown in the console (if it's running, thanks to `npx hardhat node`)
